@@ -1,13 +1,19 @@
 mod event_watcher;
+mod event_handler;
+mod file_utils;
 
 fn main() {
-    let path = std::env::args()
+    let watched_path = std::env::args()
         .nth(1)
         .expect("Argument 1 needs to be a path");
-    println!("watching {}", path);
+    let destination_path = std::env::args()
+        .nth(2)
+        .expect("Argument 2 needs to be a path");
+    println!("watching {}", watched_path);
+    println!("organizing to {}", destination_path);
 
     futures::executor::block_on(async {
-        if let Err(e) = event_watcher::async_watch(path).await {
+        if let Err(e) = event_watcher::async_watch(watched_path, destination_path).await {
             println!("error: {:?}", e)
         }
     });
