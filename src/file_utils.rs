@@ -30,6 +30,8 @@ pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: 
             path_buffer.push(file_path.file_name().unwrap());
             if let Err(e) = fs::rename(file_path, &path_buffer) {
                 eprintln!("Failed to move file: {}", e);
+            } else {
+                println!("[File] Successfully moved filed to {}", path_buffer.display());
             }
         }
     }
