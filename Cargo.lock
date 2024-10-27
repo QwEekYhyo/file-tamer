@@ -48,6 +48,7 @@ dependencies = [
  "futures",
  "notify",
  "once_cell",
+ "walkdir",
 ]
 
 [[package]]

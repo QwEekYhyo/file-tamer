@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fs, path::{Path, PathBuf}, sync::Mutex};
 use once_cell::sync::Lazy;
+use walkdir::WalkDir;
 
 static EXTENSION_TO_DIRECTORY: Lazy<Mutex<HashMap<&str, &str>>> = Lazy::new(|| {
     let mut map = HashMap::new();
@@ -39,4 +40,10 @@ pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: 
             }
         }
     }
+}
+
+pub fn organize_directory<P: AsRef<Path>>(directory: &P, destination_dir: &P) -> () {
+    WalkDir::new(directory).into_iter()
+        .filter_map(|e| e.ok())
+        .for_each(|entry| move_to_correct_dir(&PathBuf::from(entry.path()), destination_dir));
 }
