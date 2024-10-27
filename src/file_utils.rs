@@ -28,6 +28,10 @@ pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: 
         path_buffer.push(destination_dir);
         if fs::create_dir_all(&path_buffer).is_ok() {
             path_buffer.push(file_path.file_name().unwrap());
+            if file_path == &path_buffer {
+                println!("[File] {} is already in correct directory", path_buffer.display());
+                return;
+            }
             if let Err(e) = fs::rename(file_path, &path_buffer) {
                 eprintln!("Failed to move file: {}", e);
             } else {
