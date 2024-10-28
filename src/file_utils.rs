@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, path::{Path, PathBuf}, sync::Mutex};
+use std::{collections::HashMap, fs, path::{self, Path, PathBuf}, sync::Mutex};
 use once_cell::sync::Lazy;
 use walkdir::WalkDir;
 
@@ -12,6 +12,12 @@ static EXTENSION_TO_DIRECTORY: Lazy<Mutex<HashMap<&str, &str>>> = Lazy::new(|| {
 
     return Mutex::new(map);
 });
+
+fn are_paths_equal(path1: &PathBuf, path2: &PathBuf) -> std::io::Result<bool> {
+    let absolute_path1 = path::absolute(path1)?;
+    let absolute_path2 = path::absolute(path2)?;
+    return Ok(absolute_path1 == absolute_path2);
+}
 
 pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: &P) -> () {
     let extension = match file_path.extension() {
@@ -29,10 +35,21 @@ pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: 
         path_buffer.push(destination_dir);
         if fs::create_dir_all(&path_buffer).is_ok() {
             path_buffer.push(file_path.file_name().unwrap());
-            if file_path == &path_buffer {
-                println!("[File] {} is already in correct directory", path_buffer.display());
-                return;
+
+            match are_paths_equal(file_path, &path_buffer) {
+                Ok(true) => {
+                    println!("[File] {} is already in correct directory", path_buffer.display());
+                    return;
+                },
+                Ok(false) => {
+                    // Paths are not the same, we can proceed to move the file
+                }
+                Err(e) => {
+                    println!("[Error] Could not resolve paths: {:?}", e);
+                    return;
+                }
             }
+
             if let Err(e) = fs::rename(file_path, &path_buffer) {
                 eprintln!("Failed to move file: {}", e);
             } else {
