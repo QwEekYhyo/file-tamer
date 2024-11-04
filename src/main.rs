@@ -8,10 +8,22 @@ use std::{env, fs, process::exit};
 type ArgsIter = std::iter::Skip<env::Args>;
 
 fn prepare(mut args: ArgsIter) -> (String, String) {
-    let watched_path = args.next()
-        .expect("Argument 2 needs to be a path");
-    let destination_path = args.next()
-        .expect("Argument 3 needs to be a path");
+    let watched_path = match args.next() {
+        Some(path) => path,
+        None => {
+            println!("file-tamer: missing source directory");
+            println!("Try 'file-tamer help' for more information.");
+            exit(1);
+        }
+    };
+    let destination_path = match args.next() {
+        Some(path) => path,
+        None => {
+            println!("file-tamer: missing destination directory");
+            println!("Try 'file-tamer help' for more information.");
+            exit(1);
+        }
+    };
 
     if let Err(e) = fs::create_dir_all(&destination_path) {
         println!("[Error] Could not create directory {}", destination_path);
@@ -22,10 +34,30 @@ fn prepare(mut args: ArgsIter) -> (String, String) {
     return (watched_path, destination_path);
 }
 
+fn display_help() -> () {
+    println!("Usage: file-tamer COMMAND [ARGS]");
+    println!();
+    println!("Here is a list of possible commands:");
+    println!();
+    println!("  watch      WATCHED_DIRECTORY DESTINATION_DIRECTORY");
+    println!("             watch a directory for new files and move them as they come");
+    println!("  organize   SOURCE_DIRECTORY DESTINATION_DIRECTORY");
+    println!("             organize a directory to another");
+    println!("  help");
+    println!("             display this help");
+}
+
 fn main() {
     let mut args = env::args().skip(1); // Skip the executable name
 
-    let command = args.next().expect("First argument should be a command");
+    let command = match args.next() {
+        Some(cmd) => cmd,
+        None => {
+            println!("file-tamer: missing command");
+            println!("Try 'file-tamer help' for more information.");
+            exit(1);
+        }
+    };
     match command.as_str() {
         "watch" => {
             let (watched_path, destination_path) = prepare(args);
@@ -48,10 +80,12 @@ fn main() {
                 file_utils::organize_directory(&dir, &destination_path);
             }
         },
+        "help" | "--help" | "-h" => {
+            display_help();
+        },
         _ => {
-            println!("Unknown command: {}", command);
-            println!("Usage: executable watch <watched_dir> <destination_dir>");
-            println!("Usage: executable organize <directory> <destination_dir>");
+            println!("file-tamer: unrecognized command '{}'", command);
+            println!("Try 'file-tamer help' for more information.");
             exit(1);
         }
     }
