@@ -19,6 +19,27 @@ fn are_paths_equal(path1: &PathBuf, path2: &PathBuf) -> std::io::Result<bool> {
     return Ok(absolute_path1 == absolute_path2);
 }
 
+fn ensure_new_filename(file: &mut PathBuf) -> () {
+    let mut counter = 1;
+
+    let old_name = file.file_stem()
+        .unwrap_or_default()
+        .to_os_string();
+
+    while file.try_exists().unwrap_or(false) {
+        let mut new_name = old_name.clone();
+        new_name.push(format!(" ({})", counter));
+
+        if let Some(ext) = file.extension() {
+            new_name.push(".");
+            new_name.push(ext);
+        }
+
+        *file = file.with_file_name(new_name);
+        counter += 1;
+    }
+}
+
 pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: &P) -> () {
     let extension = match file_path.extension() {
         Some(ext) => ext.to_str().unwrap(),
@@ -49,6 +70,8 @@ pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: 
                     return;
                 }
             }
+
+            ensure_new_filename(&mut path_buffer);
 
             if let Err(e) = fs::rename(file_path, &path_buffer) {
                 eprintln!("Failed to move file: {}", e);
