@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, path::{self, Path, PathBuf}, sync::Mutex};
+use std::{collections::HashMap, fs::{self, OpenOptions}, path::{self, Path, PathBuf}, sync::Mutex, thread::sleep, time::Duration};
 use once_cell::sync::Lazy;
 use walkdir::WalkDir;
 
@@ -9,6 +9,7 @@ static EXTENSION_TO_DIRECTORY: Lazy<Mutex<HashMap<&str, &str>>> = Lazy::new(|| {
     map.insert("hpp", "C++ source code");
     map.insert("rs", "Rust source code");
     map.insert("txt", "Text files");
+    map.insert("zip", "Archives");
 
     return Mutex::new(map);
 });
@@ -40,6 +41,23 @@ fn ensure_new_filename(file: &mut PathBuf) -> () {
     }
 }
 
+fn wait_for_file_release(path: &PathBuf, max_wait: Duration) -> bool {
+    let start = std::time::Instant::now();
+    while start.elapsed() < max_wait {
+        match OpenOptions::new().write(true).open(path) {
+            Ok(_) => {
+                println!("[Debug] File is available");
+                return true;
+            }, // File is available
+            Err(_) => {
+                println!("[Debug] File is not available, waiting...");
+                sleep(Duration::from_millis(300));
+            } // Wait and retry
+        }
+    }
+    return false; // File was not released within the time limit
+}
+
 pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: &P) -> () {
     let extension = match file_path.extension() {
         Some(ext) => ext.to_str().unwrap(),
@@ -64,7 +82,7 @@ pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: 
                 },
                 Ok(false) => {
                     // Paths are not the same, we can proceed to move the file
-                }
+                },
                 Err(e) => {
                     println!("[Error] Could not resolve paths: {:?}", e);
                     return;
@@ -73,6 +91,7 @@ pub fn move_to_correct_dir<P: AsRef<Path>>(file_path: &PathBuf, organized_path: 
 
             ensure_new_filename(&mut path_buffer);
 
+            wait_for_file_release(file_path, Duration::from_secs(5));
             if let Err(e) = fs::rename(file_path, &path_buffer) {
                 eprintln!("Failed to move file: {}", e);
             } else {
