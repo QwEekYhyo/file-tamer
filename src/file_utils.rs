@@ -45,14 +45,8 @@ fn wait_for_file_release(path: &PathBuf, max_wait: Duration) -> bool {
     let start = std::time::Instant::now();
     while start.elapsed() < max_wait {
         match OpenOptions::new().write(true).open(path) {
-            Ok(_) => {
-                println!("[Debug] File is available");
-                return true;
-            }, // File is available
-            Err(_) => {
-                println!("[Debug] File is not available, waiting...");
-                sleep(Duration::from_millis(300));
-            } // Wait and retry
+            Ok(_) => return true, // File is available
+            Err(_) => sleep(Duration::from_millis(10)) // Wait and retry
         }
     }
     return false; // File was not released within the time limit
