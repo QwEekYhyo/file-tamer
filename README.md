@@ -3,6 +3,7 @@
   <img alt="Rust" src="https://img.shields.io/badge/Rust-%23000000.svg?e&logo=rust&logoColor=white" />
   <img alt="Version" src="https://img.shields.io/badge/version-0.1.0-blue.svg?cacheSeconds=2592000" />
   <img alt="Contrib" src="https://img.shields.io/badge/contribs-welcome-orange" />
+  <img alt="MIT" src="https://img.shields.io/badge/license-MIT-green" />
 </p>
 <p align="center">
     <img alt="FileTamer" src="resources/icon.png" height="300" width="300" />
@@ -11,13 +12,13 @@
     <b>The cross-platform file organizer written in Rust</b>
 </p>
 
-## Build
+## 🔨 Build
 
 ```sh
 cargo build
 ```
 
-## Usage
+## 🖥️ Usage
 <!-- maybe add a gif for usage? -->
 ```
 file-tamer COMMAND [ARGS]
@@ -45,6 +46,11 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 ## Show your support
 
 Give a ⭐️ if this project helped you!
+
+## ⚖️ License
+
+Copyright © 2024 [Logan LUCAS](https://github.com/QwEekYhyo).<br />
+This project is [MIT](https://github.com/QwEekYhyo/file-tamer/blob/main/LICENSE) licensed.
 
 ***
 _This README was partly generated with ❤️ by [readme-md-generator](https://github.com/kefranabg/readme-md-generator)_
