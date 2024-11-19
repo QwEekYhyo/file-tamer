@@ -13,7 +13,12 @@
 </p>
 
 ## 🔨 Build
+On Windows you first need to compile the resources into a lib file (to trick Rust apparently):
+```
+rc /nologo /fo resources\res.lib resources\resources.rc
+```
 
+Then on all platforms:
 ```sh
 cargo build
 ```
